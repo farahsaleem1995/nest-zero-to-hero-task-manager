@@ -12,6 +12,8 @@ import {
   HttpCode,
   ParseIntPipe,
   UseGuards,
+  UseInterceptors,
+  Logger,
 } from '@nestjs/common';
 
 import { TasksService } from './tasks.service';
@@ -22,10 +24,13 @@ import { TaskStatus } from './task-status.enum';
 import { GetUser } from '../auth/get-user.decorator';
 import { User } from '../auth/user.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { LoggingInterceptor } from 'src/interceptors/logging.interceptor';
 
 @Controller('tasks')
 @UseGuards(JwtAuthGuard)
+@UseInterceptors(LoggingInterceptor)
 export class TasksController {
+  private logger = new Logger('TasksController');
   constructor(private tasksService: TasksService) {}
 
   @Get()
@@ -34,6 +39,12 @@ export class TasksController {
     @Query() getTasksFilterDto: GetTasksFilterDto,
     @GetUser() user: User,
   ): Promise<Task[]> {
+    this.logger.verbose(
+      `User "${user.username}" retrieving all tasks. Filters: ${JSON.stringify(
+        getTasksFilterDto,
+      )}`,
+    );
+
     return this.tasksService.getTasks(getTasksFilterDto, user);
   }
 
@@ -51,6 +62,12 @@ export class TasksController {
     @Body() createTaskDto: CreateTaskDto,
     @GetUser() user: User,
   ): Promise<Task> {
+    this.logger.verbose(
+      `User "${user.username}" creating a new task. Data: ${JSON.stringify(
+        createTaskDto,
+      )}`,
+    );
+
     return this.tasksService.createTask(createTaskDto, user);
   }
 

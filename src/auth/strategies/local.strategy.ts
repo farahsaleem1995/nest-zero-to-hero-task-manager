@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Strategy } from 'passport-local';
@@ -26,6 +22,9 @@ export class LocalStartegy extends PassportStrategy(Strategy) {
       username: username,
       password: password,
     };
+    if (!username || !password) {
+      throw new UnauthorizedException();
+    }
 
     const user = await this.userRepository.validateUserPassword(
       authcreadentials,

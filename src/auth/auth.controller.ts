@@ -4,7 +4,8 @@ import {
   Body,
   ValidationPipe,
   UseGuards,
-  UnauthorizedException,
+  UseInterceptors,
+  HttpCode,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
@@ -14,8 +15,10 @@ import { LoaclAuthGuard } from './guards/local-auth.guard';
 import { GetUser } from './get-user.decorator';
 import { User } from './user.entity';
 import { JwtPayload } from './interfaces';
+import { LoggingInterceptor } from 'src/interceptors/logging.interceptor';
 
 @Controller('auth')
+@UseInterceptors(LoggingInterceptor)
 export class AuthController {
   constructor(
     private authService: AuthService,
@@ -30,6 +33,7 @@ export class AuthController {
   }
 
   @Post('sign-in')
+  @HttpCode(200)
   @UseGuards(LoaclAuthGuard)
   async signIn(@GetUser() user: User): Promise<{ accessToken: string }> {
     const payload: JwtPayload = { sub: user.id, username: user.username };
